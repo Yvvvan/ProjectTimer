@@ -220,7 +220,7 @@ class TimeTrackerApp:
 
     def toggle_timer(self):
         if not self.is_running:
-            self.start_time = time.time()
+            self.start_time = int(time.time())
             self.start_pause_button.config(text="暂停")
             self.start_pause_button.config(relief=tk.SUNKEN)
             self.settings_button.config(state=tk.DISABLED)
@@ -228,7 +228,7 @@ class TimeTrackerApp:
             # 重置notes
             self.notes_text.delete("1.0", "end")
         else:
-            end_time = time.time()
+            end_time = int(time.time())
             elapsed_time = end_time - self.start_time
             self.records.append({
                 "project": self.current_project.get(),
@@ -289,10 +289,13 @@ class TimeTrackerApp:
             button_frame.pack(pady=5)
 
             delete_button = tk.Button(button_frame, text="删除选中记录", command=lambda: self.delete_records(tree))
-            delete_button.pack(side=tk.LEFT, padx=5)
+            delete_button.pack(side=tk.LEFT, padx=10)
 
             archive_button = tk.Button(button_frame, text="导出存档", command=self.export_records)
             archive_button.pack(side=tk.LEFT, padx=10)
+
+            copy_button = tk.Button(button_frame, text="复制到剪贴板", command=lambda: self.copy_treeview_to_clipboard(tree))
+            copy_button.pack(side=tk.LEFT, padx=10)
 
             # 确认关闭时使用
             self.records_window.protocol("WM_DELETE_WINDOW", self.on_records_window_close)
@@ -338,6 +341,22 @@ class TimeTrackerApp:
         else:
             messagebox.showerror("错误", "请选择要删除的记录！")
 
+    # 定义复制功能
+    def copy_treeview_to_clipboard(self, tree):
+        # 初始化一个空字符串用于存储数据
+        clipboard_data = ""
+        # 遍历 Treeview 中的所有行
+        for child in tree.get_children():
+            # 获取每一行的值
+            row_values = tree.item(child)["values"]
+            # 将行数据格式化为制表符分隔的字符串
+            row_string = "\t".join(map(str, row_values))
+            # 将每行数据加到结果字符串中，并以换行符分隔
+            clipboard_data += row_string + "\n"
+        # 清空剪贴板
+        root.clipboard_clear()
+        # 将数据添加到剪贴板
+        root.clipboard_append(clipboard_data)
 
 if __name__ == "__main__":
     root = tk.Tk()
